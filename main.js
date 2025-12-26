@@ -1,3 +1,84 @@
+const canvas = document.getElementById("gameCanvas")
+const ctx = canvas.getContext("2d")
+let selectedTerritoryId = null
+
+const GRID_COLS = 2
+const GRID_ROWS = 1
+const CELL_SIZE = 200
+
+function territoryToGrid(id) {
+  return {
+    col: (id - 1) % GRID_COLS,
+    row: Math.floor((id - 1) / GRID_COLS)
+  }
+}
+
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+  for (const t of Object.values(gameState.territories)) {
+    const { col, row } = territoryToGrid(t.id)
+
+    const x = col * CELL_SIZE
+    const y = row * CELL_SIZE
+
+    ctx.fillStyle = gameState.players[t.owner]?.color || "#888"
+    ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE)
+
+    if (t.id === selectedTerritoryId) {
+      ctx.strokeStyle = "yellow"
+      ctx.lineWidth = 4
+      ctx.strokeRect(x + 2, y + 2, CELL_SIZE - 4, CELL_SIZE - 4)
+    }
+
+    ctx.fillStyle = "white"
+    ctx.font = "16px sans-serif"
+    ctx.fillText(`Territory ${t.id}`, x + 10, y + 20)
+    ctx.fillText(`Units: ${Math.floor(t.units)}`, x + 10, y + 45)
+    ctx.fillText(`Pop: ${Math.floor(t.population)}`, x + 10, y + 65)
+  }
+}
+
+canvas.addEventListener("click", (e) => {
+  const rect = canvas. getBoundingClientRect()
+  const mouseX = e.clientX - rect.left
+  const mouseY = e.clientY - rect.top
+
+  const col = Math.floor(mouseX / CELL_SIZE)
+  const row = Math.floor(mouseY / CELL_SIZE)
+
+  const clickedId = col + 1 // because row = 0 for now
+
+  const clickedTerritory = gameState.territories[clickedId]
+  if (!clickedTerritory) return
+
+  handleTerritoryClick(clickedTerritory)
+})
+
+function handleTerritoryClick(territory) {
+  if (selectedTerritoryId === null){
+    selectedTerritoryId = territory.id
+    return
+  }
+
+  const selected = gameState.territories[selectedTerritoryId]
+
+  // same territory -> deselect
+  if (selected.id === territory.id){
+    selectedTerritoryId = null
+    return
+  }
+
+  // Only allow neighbor interactions
+  if (selected.neighbors.includes(territory.id)) {
+    // temporary test logging
+    console.log(`Order: ${selected.id} attacks ${territory.id}`)
+    
+    // Later push to queue
+  }
+  selectedTerritoryId = null
+}
+
 const gameState = {
   time : 0,
 
@@ -11,7 +92,7 @@ const gameState = {
 
 territories : {
   1 : {
-    id : 0,
+    id : 1,
     owner : "player",
     units : 100,
     neighbors : [2],
@@ -54,6 +135,8 @@ function update(delta) {
 
   updateCombat(delta)
   updatePopulation(delta)
+  
+  render()
   
   // temporary test logging
   for (const t of Object.values(gameState.territories)) {
