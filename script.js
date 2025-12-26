@@ -58,6 +58,7 @@ function update(delta) {
   // temporary test logging
   for (const t of Object.values(gameState.territories)) {
     console.log(`T${t.id} Owner:${t.owner} Units:${t.units.toFixed(1)} Pop:${Math.floor(t.population)}`)
+  }
 }
 
 requestAnimationFrame(gameLoop)
@@ -79,12 +80,13 @@ function updateCombat(delta) {
       const neighbor = gameState.territories[nId]
       
       if (t.owner !== neighbor.owner) {
-        const attackPower = t.units * 0.001 delta 
-        neighbors.units -= attackPower
-        
+        const attackPower = t.units * 0.001 * delta 
+        neighbor.units -= attackPower
         if (neighbor.units <= 0){
           neighbor.owner = t.owner
           neighbor.units = t.units * 0.2
+          // temporary test logging
+          console.log(`Territory ${neighbor.id} captured by ${t.owner}`)
         }
       }
     }
