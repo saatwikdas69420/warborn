@@ -7,9 +7,10 @@ const GRID_ROWS = 1
 const CELL_SIZE = 200
 
 function territoryToGrid(id) {
+  const index = id - 1
   return {
-    col: (id - 1) % GRID_COLS,
-    row: Math.floor((id - 1) / GRID_COLS)
+    col: index % GRID_COLS,
+    row: Math.floor(index / GRID_COLS)
   }
 }
 
@@ -47,7 +48,7 @@ canvas.addEventListener("click", (e) => {
   const col = Math.floor(mouseX / CELL_SIZE)
   const row = Math.floor(mouseY / CELL_SIZE)
 
-  const clickedId = col + 1 // because row = 0 for now
+  const clickedId = row * GRID_COLS + col + 1
 
   const clickedTerritory = gameState.territories[clickedId]
   if (!clickedTerritory) return
