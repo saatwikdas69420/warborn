@@ -36,7 +36,7 @@ function render() {
     ctx.font = "16px sans-serif"
     ctx.fillText(`Territory ${t.id}`, x + 10, y + 20)
     ctx.fillText(`Units: ${Math.floor(t.units)}`, x + 10, y + 45)
-    ctx.fillText(`Pop: ${Math.floor(t.population)}`, x + 10, y + 65)
+    ctx.fillText(`Population: ${Math.floor(t.population)}`, x + 10, y + 65)
   }
 }
 
@@ -96,6 +96,7 @@ territories : {
     id : 1,
     owner : "player",
     units : 100,
+    manpower : 100,
     neighbors : [2],
     terrain : "plains",
     population : 1000,
@@ -105,6 +106,7 @@ territories : {
     id : 2,
     owner : "2",
     units : 50,
+    manpower : 50,
     neighbors : [1], 
     population : 500,
     maxPop : 5000
@@ -113,6 +115,7 @@ territories : {
     id : 3,
     owner : "3",
     units : 50,
+    manpower : 50,
     neighbors : [1], 
     population : 500,
     maxPop : 5000
@@ -139,9 +142,9 @@ function update(delta) {
   
   render()
   
-  // temporary test logging
-  for (const t of Object.values(gameState.territories)) {
-    console.log(`T${t.id} Owner:${t.owner} Units:${t.units.toFixed(1)} Pop:${Math.floor(t.population)}`)
+  if (Math.floor(gameState.time / 1000) !==
+    Math.floor((gameState.time - delta) / 1000)) {
+    // log
   }
 }
 
@@ -158,20 +161,24 @@ function updatePopulation(delta) {
 
 function updateCombat(delta) {
   for (const t of Object.values(gameState.territories)) {
-    t.units = t.population * 0.1
+    t.manpower = t.population * 0.1
+    if (!t.isUnderAttack && t.units < t.manpower) {
+      t.units += t.manpower * 0.001
+    }
+
     
     for (const nId of t.neighbors) {
       const neighbor = gameState.territories[nId]
       
       if (t.owner !== neighbor.owner) {
-        const attackPower = t.units * 0.001 * delta 
+        /* const attackPower = t.units * 0.005 * delta 
         neighbor.units -= attackPower
         if (neighbor.units <= 0){
           neighbor.owner = t.owner
           neighbor.units = t.units * 0.2
           // temporary test logging
           console.log(`Territory ${neighbor.id} captured by ${t.owner}`)
-        }
+        } */
       }
     }
   }
