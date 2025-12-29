@@ -1,10 +1,73 @@
 const canvas = document.getElementById("gameCanvas")
 const ctx = canvas.getContext("2d")
 let selectedTerritoryId = null
+fetch("indian_map.svg")
+.then(res => res.text())
+.then(loadMap)
 
 const GRID_COLS = 2
 const GRID_ROWS = 1
 const CELL_SIZE = 200
+
+function loadMap(svgText){
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(svgText, "image/svg+xml")
+
+  const paths = doc.querySelectorAll("path")
+  paths.forEach(path => {
+    const id = path.id
+    const d = path.getAttribute("d")
+
+    const polygon = parsePathToPolygon(d)
+
+    gameState.territories[id] = {
+      id,
+      owner: null,
+      polygon,
+      labelPos: centroid(polygon),
+      neighbors: [],
+      population: 1000,
+      maxPop: 10000,
+      units: 100,
+      manpower: 100
+    }
+  })
+}
+
+function parsePathToPolygon(d){
+  const tokens = d
+  .replace(/,/g, " ")
+  .split(/\s+/)
+
+  const points = []
+  let i = 0
+
+  while (i < tokens.length){
+    const token = tokens[i++]
+
+    if (token === "M" || token === "L") {
+      const x = parseFloat(tokens[i++])
+      const y = parseFloat(tokens[i++])
+      points.push({ x , y })
+    }
+
+    if (token === "Z") break
+  }
+
+  return points
+}
+
+function centroid(points) {
+  let x = 0, y = 0
+  for (const p of points) {
+    x += p.x
+    y += p.y
+  }
+  return {
+    x: x / points.length,
+    y: y / points.length
+  }
+}
 
 function territoryToGrid(id) {
   const index = id - 1
